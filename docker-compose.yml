@@ -1,0 +1,21 @@
+services:
+  shelf:
+    build: .
+    container_name: shelf
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Owner of your files, so uploads get the right ownership.
+      PUID: "1000"
+      PGID: "1000"
+      SHELF_USER: admin
+      SHELF_PASSWORD: change-me
+      # SHELF_READONLY: "1"      # browse and play only, no uploads or edits
+      # SHELF_SHOW_HIDDEN: "1"   # show dotfiles
+    volumes:
+      - /path/to/your/files:/data
+      - shelf-cache:/cache       # thumbnails; safe to delete at any time
+
+volumes:
+  shelf-cache:

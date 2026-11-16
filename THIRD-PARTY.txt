@@ -1,0 +1,2 @@
+hls.js (web/hls.min.js) is Copyright (c) 2017 Dailymotion, licensed under the Apache License 2.0.
+https://github.com/video-dev/hls.js

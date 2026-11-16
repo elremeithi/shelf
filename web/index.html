@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>Shelf</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23e0a23a' d='M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/_/style.css?v={{v}}">
+</head>
+<body>
+<header id="top">
+  <nav id="crumbs" aria-label="Folder path"></nav>
+  <div id="tools">
+    <label class="search">
+      <i data-icon="search"></i>
+      <input id="q" type="search" placeholder="Search this folder" autocomplete="off" spellcheck="false" aria-label="Search this folder">
+    </label>
+    <select id="sort" aria-label="Sort by">
+      <option value="name">Name</option>
+      <option value="date">Newest</option>
+      <option value="size">Largest</option>
+    </select>
+    <input id="tile" type="range" min="96" max="360" step="4" aria-label="Thumbnail size" title="Thumbnail size">
+    <button id="viewBtn" class="icon" title="Switch between grid and list" aria-label="Switch between grid and list"></button>
+    <button id="mkdirBtn" class="icon rw" title="New folder" aria-label="New folder"><i data-icon="folderPlus"></i></button>
+    <button id="uploadBtn" class="primary rw"><i data-icon="upload"></i><span>Upload</span></button>
+    <button id="logoutBtn" class="icon" title="Sign out" aria-label="Sign out" hidden><i data-icon="logout"></i></button>
+    <input id="filePick" type="file" multiple hidden>
+  </div>
+</header>
+
+<main>
+  <div id="notice" hidden></div>
+  <div id="items" class="grid"></div>
+  <p id="status"></p>
+  <p id="ver">Shelf build {{v}}</p>
+</main>
+
+<div id="bar" hidden></div>
+
+<div id="uploads" hidden>
+  <div class="up-row"><span id="upText"></span><button id="upCancel" class="icon" title="Cancel uploads" aria-label="Cancel uploads"><i data-icon="x"></i></button></div>
+  <div class="up-track"><div id="upFill"></div></div>
+</div>
+
+<div id="drop" hidden><div><i data-icon="upload"></i><span>Drop to upload here</span></div></div>
+<div id="toasts" aria-live="polite"></div>
+
+<div id="lb" hidden tabindex="-1" role="dialog" aria-label="Media viewer">
+  <div id="lbStage"></div>
+  <div id="lbTop" class="lb-chrome">
+    <span id="lbName"></span>
+    <span id="lbCount"></span>
+    <select id="lbMode" hidden title="Playback: original file or transcoded" aria-label="Playback quality"></select>
+    <a id="lbDl" class="icon" title="Download" aria-label="Download"><i data-icon="download"></i></a>
+    <button id="lbFs" class="icon" title="Fullscreen (F)" aria-label="Fullscreen"><i data-icon="maximize"></i></button>
+    <button id="lbClose" class="icon" title="Close (Esc)" aria-label="Close"><i data-icon="x"></i></button>
+  </div>
+  <button id="lbPrev" class="lb-nav lb-chrome" aria-label="Previous"><i data-icon="left"></i></button>
+  <button id="lbNext" class="lb-nav lb-chrome" aria-label="Next"><i data-icon="right"></i></button>
+</div>
+
+<dialog id="ask">
+  <form method="dialog">
+    <h2 id="askTitle"></h2>
+    <p id="askText"></p>
+    <input id="askInput" autocomplete="off" spellcheck="false">
+    <div class="dlg-btns">
+      <button value="cancel" formnovalidate>Cancel</button>
+      <button id="askOk" value="ok" class="primary"></button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="login">
+  <form id="loginForm">
+    <h2>Sign in to Shelf</h2>
+    <input id="loginUser" placeholder="Username" autocomplete="username" autocapitalize="none" required>
+    <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password" required>
+    <p id="loginErr" class="err"></p>
+    <div class="dlg-btns"><button class="primary">Sign in</button></div>
+  </form>
+</dialog>
+
+<script src="/_/app.js?v={{v}}" data-v="{{v}}"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+# build output
+/shelf
+*.exe
+*.zip
+*.tar.gz
+# local config and data
+.env
+.env.*
+!.env.example
+/.cache/
+/data/
+/cache/
+node_modules/
+.DS_Store

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>shelf</Name>
+  <Repository>shelf:latest</Repository>
+  <Network>bridge</Network>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Overview>Small, fast web file manager with a thumbnail gallery and a fullscreen viewer for pictures and videos.</Overview>
+  <Category>Cloud: MediaApp:Photos MediaApp:Video Tools:</Category>
+  <WebUI>http://[IP]:[PORT:8080]/</WebUI>
+  <ExtraParams>--restart unless-stopped</ExtraParams>
+  <Config Name="Web UI port" Target="8080" Default="8080" Mode="tcp" Description="Port for the web interface." Type="Port" Display="always" Required="true" Mask="false">8080</Config>
+  <Config Name="Files" Target="/data" Default="/mnt/user/" Mode="rw" Description="The share or folder to browse. Pick one share (for example /mnt/user/media) rather than all of /mnt/user if you can." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/</Config>
+  <Config Name="Thumbnail cache" Target="/cache" Default="/mnt/user/appdata/shelf" Mode="rw" Description="Where thumbnails are kept. Safe to delete." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/shelf</Config>
+  <Config Name="Username" Target="SHELF_USER" Default="admin" Description="Login name. Leave Username or Password empty to run with no login." Type="Variable" Display="always" Required="false" Mask="false">admin</Config>
+  <Config Name="Password" Target="SHELF_PASSWORD" Default="" Description="Login password." Type="Variable" Display="always" Required="false" Mask="true"></Config>
+  <Config Name="Read-only" Target="SHELF_READONLY" Default="0" Description="Set to 1 to disable uploads and all changes." Type="Variable" Display="always" Required="false" Mask="false">0</Config>
+  <Config Name="Show hidden files" Target="SHELF_SHOW_HIDDEN" Default="0" Description="Set to 1 to show dotfiles." Type="Variable" Display="advanced" Required="false" Mask="false">0</Config>
+  <Config Name="PUID" Target="PUID" Default="99" Description="User that owns uploaded files (99 = nobody on Unraid)." Type="Variable" Display="advanced" Required="false" Mask="false">99</Config>
+  <Config Name="PGID" Target="PGID" Default="100" Description="Group that owns uploaded files (100 = users on Unraid)." Type="Variable" Display="advanced" Required="false" Mask="false">100</Config>
+  <Config Name="UMASK" Target="UMASK" Default="000" Description="000 gives the same open permissions Unraid shares use." Type="Variable" Display="advanced" Required="false" Mask="false">000</Config>
+</Container>
