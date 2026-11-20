@@ -23,26 +23,22 @@ Open http://localhost:8080.
 
 ## Unraid
 
-Unraid's Docker tab installs images rather than building them, so build the image once on the server and then add the container from the included template.
+Every push to `main` builds a new image and publishes it as
+`ghcr.io/elremeithi/shelf:latest`, so Unraid can install and update it like any
+other app.
 
-1. Copy this folder to the server, for example to `/mnt/user/appdata/shelf-src`.
-2. In the Unraid terminal, build the image:
-
-   ```bash
-   docker build -t shelf:latest /mnt/user/appdata/shelf-src
-   ```
-
-3. Install the template:
+1. Save the template to the Community Applications private folder:
 
    ```bash
-   cp /mnt/user/appdata/shelf-src/unraid/my-shelf.xml /boot/config/plugins/dockerMan/templates-user/
+   mkdir -p /boot/config/plugins/community.applications/private/elremeithi
+   wget -qO /boot/config/plugins/community.applications/private/elremeithi/shelf.xml https://raw.githubusercontent.com/elremeithi/shelf/main/unraid/shelf.xml
    ```
 
-4. Docker tab → **Add Container** → pick **shelf** under *Template* → set **Files** to the share you want to browse, set a **Password** → **Apply**.
+2. Open **Apps** → **Private Apps** → **shelf** → **Install**. Set **Files** to the share you want to browse, set a **Password** → **Apply**.
 
 The template runs Shelf as `nobody:users` (99:100) with umask 000, so uploads have the same ownership and permissions as files written over SMB. Thumbnails go to `/mnt/user/appdata/shelf`.
 
-The image is local, so Unraid shows "not available" in the update column; that is expected. To update, rebuild with the command from step 2 and restart the container.
+Updates show up in the Docker tab like any other container. The **Auto Update Applications** plugin can install them on a schedule.
 
 ## Settings
 

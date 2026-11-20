@@ -1,7 +1,11 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>shelf</Name>
-  <Repository>shelf:latest</Repository>
+  <Repository>ghcr.io/elremeithi/shelf:latest</Repository>
+  <Registry>https://github.com/elremeithi/shelf/pkgs/container/shelf</Registry>
+  <Support>https://github.com/elremeithi/shelf/issues</Support>
+  <Project>https://github.com/elremeithi/shelf</Project>
+  <Icon>https://raw.githubusercontent.com/elremeithi/shelf/main/unraid/icon.png</Icon>
   <Network>bridge</Network>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
