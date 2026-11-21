@@ -101,7 +101,7 @@ func (s *server) handleList(w http.ResponseWriter, r *http.Request) {
 		}
 		out = append(out, mkEntry(de.Name(), fi))
 	}
-	writeJSON(w, map[string]any{"path": rel, "entries": out})
+	writeJSON(w, map[string]any{"path": rel, "entries": out, "writable": !s.readonly && writable(abs)})
 }
 
 func (s *server) handleSearch(w http.ResponseWriter, r *http.Request) {
