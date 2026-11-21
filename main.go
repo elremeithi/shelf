@@ -11,6 +11,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
@@ -133,6 +134,9 @@ func main() {
 		log.Print("WARNING: ffmpeg not found, video thumbnails and transcoding are unavailable")
 	} else if !strings.Contains(string(out), "libx264") {
 		log.Print("WARNING: this ffmpeg has no libx264 encoder, video transcoding is unavailable")
+	}
+	if !s.readonly && !writable(s.root) {
+		log.Printf("NOTE: user %d, group %d cannot write to the top folder %s; uploads only work in subfolders it can write to", os.Getuid(), os.Getgid(), s.root)
 	}
 	log.Printf("shelf serving %s on %s (cache %s, readonly=%v)", s.root, addr, s.cache, s.readonly)
 	log.Fatal(srv.ListenAndServe())
@@ -327,13 +331,26 @@ func httpError(w http.ResponseWriter, code int, msg string) {
 	json.NewEncoder(w).Encode(map[string]string{"error": msg})
 }
 
+// permissionHint explains a permission error in terms a server owner can act on.
+func permissionHint() string {
+	return fmt.Sprintf("permission denied: Shelf runs as user %d, group %d (PUID/PGID), which cannot write to this folder. "+
+		"Give that user write access to the folder on the server, or set PUID/PGID to the folder's owner.", os.Getuid(), os.Getgid())
+}
+
+// writable reports whether the server process may create files in dir.
+func writable(dir string) bool { return syscall.Access(dir, 2 /* W_OK */) == nil }
+
 // fsError reports a filesystem error without leaking absolute paths.
 func fsError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, fs.ErrNotExist), errors.Is(err, errHidden):
 		httpError(w, http.StatusNotFound, "not found")
 	case errors.Is(err, fs.ErrPermission):
-		httpError(w, http.StatusForbidden, "permission denied")
+		httpError(w, http.StatusForbidden, permissionHint())
+	case errors.Is(err, syscall.EROFS):
+		httpError(w, http.StatusForbidden, "this folder is mounted read-only; give the container path Read/Write access")
+	case errors.Is(err, syscall.ENOSPC), errors.Is(err, syscall.EDQUOT):
+		httpError(w, http.StatusInsufficientStorage, "the disk is full")
 	case errors.Is(err, fs.ErrExist):
 		httpError(w, http.StatusConflict, "already exists")
 	default:

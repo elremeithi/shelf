@@ -46,6 +46,7 @@ const state = {
   readonly: false,
 };
 const listCache = new Map();  // path -> entries
+const dirWritable = new Map(); // path -> can the server write there
 const scrollPos = new Map();  // path -> scrollY
 let loadSeq = 0;
 
@@ -82,7 +83,8 @@ function toast(msg, isErr) {
   t.className = 'toast' + (isErr ? ' err' : '');
   t.textContent = msg;
   $('#toasts').append(t);
-  setTimeout(() => t.remove(), isErr ? 6000 : 3000);
+  setTimeout(() => t.remove(), isErr ? 12000 : 3000);
+  t.addEventListener('click', () => t.remove());
 }
 const fail = e => { if (e && e.name !== 'AbortError' && !e.silent) toast(e.message || String(e), true); };
 
@@ -174,6 +176,7 @@ addEventListener('popstate', () => {
 async function fetchList(p) {
   const d = await api('GET', '/api/ls?p=' + encodeURIComponent(p));
   listCache.set(p, d.entries);
+  dirWritable.set(p, d.writable !== false);
   return d.entries;
 }
 
@@ -305,13 +308,16 @@ function render() {
   itemsEl.classList.toggle('has-sel', state.sel.size > 0);
 
   const notice = $('#notice');
-  notice.hidden = !state.search;
+  const locked = !state.search && !state.readonly && dirWritable.get(state.path) === false;
+  notice.hidden = !state.search && !locked;
+  notice.classList.toggle('warn', locked);
+  if (locked) notice.textContent = 'Shelf cannot write to this folder on the server, so uploads and changes here will fail. Open a subfolder it can write to, or fix the folder\'s permissions on the server.';
   if (state.search) {
     notice.textContent = `${view.length}${state.search.more ? '+' : ''} result${view.length === 1 ? '' : 's'} for “${state.search.q}” in ${state.path === '/' ? 'all files' : baseOf(state.path)}`;
   }
 
   if (!view.length) {
-    itemsEl.innerHTML = `<div class="empty">${state.search ? 'Nothing found.' : state.readonly ? 'This folder is empty.' : 'This folder is empty. Drop files here to upload.'}</div>`;
+    itemsEl.innerHTML = `<div class="empty">${state.search ? 'Nothing found.' : (state.readonly || dirWritable.get(state.path) === false) ? 'This folder is empty.' : 'This folder is empty. Drop files here to upload.'}</div>`;
     $('#status').textContent = '';
     return;
   }
@@ -549,12 +555,38 @@ function pumpUploads() {
   if (up.total) {
     const ok = up.done;
     if (ok) toast(`Uploaded ${ok} file${ok === 1 ? '' : 's'}.`);
+    reportUploadErrors();
     const touched = up.dirs.has(state.path);
     Object.assign(up, { total: 0, done: 0, failed: 0, bytes: 0, sent: 0 });
     up.dirs.clear();
     listCache.clear();
     if (touched) refresh();
   }
+}
+
+// Upload errors are grouped by reason, so 200 failed files give one message.
+const upErrors = new Map();   // reason -> [names]
+function uploadError(job, xhr) {
+  let msg = '';
+  try { msg = JSON.parse(xhr.responseText).error || ''; } catch {}
+  if (!msg) {
+    switch (xhr.status) {
+      case 0: msg = 'the connection was cut before the upload finished. If Shelf is behind a reverse proxy or tunnel, it may be blocking or limiting uploads.'; break;
+      case 401: msg = 'your login has expired. Reload the page and sign in again.'; break;
+      case 413: msg = 'a proxy in front of Shelf refused the file as too large (for nginx, raise client_max_body_size).'; break;
+      case 502: case 503: case 504: msg = `a proxy in front of Shelf gave up on the upload (HTTP ${xhr.status}).`; break;
+      default: msg = `the server answered HTTP ${xhr.status}.`;
+    }
+  }
+  if (!upErrors.has(msg)) upErrors.set(msg, []);
+  upErrors.get(msg).push(job.rel);
+}
+function reportUploadErrors() {
+  for (const [msg, names] of upErrors) {
+    const who = names.length === 1 ? `“${names[0]}”` : `${names.length} files`;
+    toast(`Could not upload ${who}: ${msg}`, true);
+  }
+  upErrors.clear();
 }
 
 function startUpload(job) {
@@ -570,9 +602,7 @@ function startUpload(job) {
     else {
       up.failed++;
       if (!job.cancelled) {
-        let msg = xhr.status ? `upload failed (HTTP ${xhr.status})` : 'upload failed, the connection was cut or the file could not be read';
-        try { msg = JSON.parse(xhr.responseText).error || msg; } catch {}
-        toast(`${job.rel}: ${msg}`, true);
+        uploadError(job, xhr);
       }
     }
     pumpUploads();

@@ -78,6 +78,12 @@ Touch: long-press selects, swipe left/right steps through the viewer, swipe down
 - HEIC and TIFF pictures are shown through a server-made JPEG preview, as far as the bundled ffmpeg can read them.
 - There is a single account, not per-user permissions or share links.
 
+## Troubleshooting uploads
+
+- **"Shelf cannot write to this folder"** (banner) or **"permission denied: Shelf runs as user …"**: the user set by `PUID`/`PGID` has no write access to that folder on the server. Either give it access (on Unraid, shares normally belong to `nobody:users`, which is 99:100; a folder created by root, or by Docker for a path that did not exist yet, does not) or set `PUID`/`PGID` to the folder's owner. The container log also notes at start-up when the top folder is not writable.
+- **Uploading at the top level fails, subfolders work**: the top folder is the mapped path itself. On Unraid, map a share (for example `/mnt/user/media`) rather than `/mnt/user/`, or upload inside a share.
+- **"the connection was cut"** or **"refused the file as too large"**: a reverse proxy or tunnel in front of Shelf is blocking or limiting uploads. For nginx, set `client_max_body_size 0;` and `proxy_request_buffering off;` for Shelf.
+
 ## Develop
 
 ```bash
