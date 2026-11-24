@@ -117,6 +117,13 @@ func main() {
 	mux.HandleFunc("POST /api/transfer", s.write(s.handleTransfer))
 	mux.HandleFunc("POST /api/delete", s.write(s.handleDelete))
 
+	// Folder sync for the Android app.
+	mux.HandleFunc("GET /api/sync/tree", s.auth(s.handleSyncTree))
+	mux.HandleFunc("GET /api/sync/hash", s.auth(s.handleSyncHash))
+	mux.HandleFunc("GET /api/sync/upload", s.auth(s.handleSyncOffset))
+	mux.HandleFunc("PUT /api/sync/upload", s.write(s.handleSyncChunk))
+	mux.HandleFunc("POST /api/sync/mkdir", s.write(s.handleMkdirAll))
+
 	srv := &http.Server{
 		Addr:              addr,
 		Handler:           mux,
@@ -214,11 +221,15 @@ func (s *server) authed(r *http.Request) bool {
 	if s.user == "" {
 		return true
 	}
-	c, err := r.Cookie("shelf")
-	if err != nil {
+	val := ""
+	if a := r.Header.Get("Authorization"); strings.HasPrefix(a, "Bearer ") {
+		val = strings.TrimPrefix(a, "Bearer ")
+	} else if c, err := r.Cookie("shelf"); err == nil {
+		val = c.Value
+	} else {
 		return false
 	}
-	exp, sig, ok := strings.Cut(c.Value, ".")
+	exp, sig, ok := strings.Cut(val, ".")
 	if !ok {
 		return false
 	}
@@ -257,6 +268,8 @@ func (s *server) write(h http.HandlerFunc) http.HandlerFunc {
 
 func (s *server) handleMe(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, map[string]any{
+		"app":      "shelf",
+		"sync":     1,
 		"authed":   s.authed(r),
 		"login":    s.user != "",
 		"readonly": s.readonly,
@@ -280,16 +293,18 @@ func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	exp := strconv.FormatInt(time.Now().Add(sessionTTL).Unix(), 10)
+	token := exp + "." + s.sign(exp)
 	http.SetCookie(w, &http.Cookie{
 		Name:     "shelf",
-		Value:    exp + "." + s.sign(exp),
+		Value:    token,
 		Path:     "/",
 		MaxAge:   int(sessionTTL.Seconds()),
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 		Secure:   r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https",
 	})
-	writeJSON(w, map[string]any{"ok": true})
+	// Apps use the same signed value as a bearer token.
+	writeJSON(w, map[string]any{"ok": true, "token": token, "expires": exp})
 }
 
 func (s *server) handleLogout(w http.ResponseWriter, r *http.Request) {

@@ -1,0 +1,11 @@
+<resources>
+    <color name="accent">#E0A23A</color>
+    <color name="accent_dark">#B87708</color>
+    <color name="bg">#F6F5F2</color>
+    <color name="panel">#FFFFFF</color>
+    <color name="text">#1C1D1F</color>
+    <color name="dim">#6A6F76</color>
+    <color name="line">#DCD9D2</color>
+    <color name="danger">#C23B28</color>
+    <color name="icon_bg">#1A1D20</color>
+</resources>

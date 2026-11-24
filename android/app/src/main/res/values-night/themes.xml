@@ -1,0 +1,18 @@
+<resources>
+    <style name="AppTheme" parent="android:Theme.Material">
+        <item name="android:colorPrimary">@color/panel</item>
+        <item name="android:colorPrimaryDark">@color/bg</item>
+        <item name="android:colorAccent">@color/accent</item>
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:statusBarColor">@color/bg</item>
+        <item name="android:navigationBarColor">@color/bg</item>
+        <item name="android:actionBarStyle">@style/Bar</item>
+        <item name="android:textColorPrimary">@color/text</item>
+        <item name="android:textColorSecondary">@color/dim</item>
+    </style>
+    <style name="Bar" parent="android:Widget.Material.ActionBar.Solid">
+        <item name="android:background">@color/bg</item>
+        <item name="android:elevation">0dp</item>
+        <item name="android:titleTextStyle">@style/BarTitle</item>
+    </style>
+</resources>

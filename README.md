@@ -40,6 +40,33 @@ The template runs Shelf as `nobody:users` (99:100) with umask 000, so uploads ha
 
 Updates show up in the Docker tab like any other container. The **Auto Update Applications** plugin can install them on a schedule.
 
+## Android app
+
+`android/` holds **Shelf sync**, an Android app (8.0 and newer) that pairs folders on the phone with folders on the server.
+
+- **Two-way**: new and changed files are copied both ways. Deleting a file on one side never deletes it on the other. When a phone edit replaces a server file, the old one is kept in the folder's hidden `.shelf-versions`; when both sides changed a file, both copies are kept.
+- **Move to server**: frees space on the phone. Each file is uploaded, the server confirms it stored identical bytes (SHA-256), and only then is it removed from the phone. A different file already on the server under the same name is kept, and the phone's copy is stored beside it.
+- Any phone folder can go to any server folder; missing server folders are created.
+- Uploads are sent in 8 MB chunks and resume after a dropped connection; files appear on the server only once complete and checked.
+- Syncs run automatically (every 15 minutes to once a day, optionally only on Wi-Fi or while charging) or with **Sync now**.
+- **Open Shelf** shows the full web interface inside the app, already signed in.
+
+Files on the server are never deleted by the app.
+
+Build it with JDK 17+ and the Android SDK (platform 35):
+
+```bash
+cd android && ./gradlew assembleDebug
+```
+
+For a release build, sign with your own key; it must stay the same for every update:
+
+```bash
+SHELF_KEYSTORE=/path/release.jks SHELF_KEYSTORE_PASSWORD=... ./gradlew assembleRelease
+```
+
+The sync engine tests run against a real server: start Shelf, then set `SHELF_TEST_URL`, `SHELF_TEST_DATA` (the folder it serves), `SHELF_TEST_USER` and `SHELF_TEST_PASS` and run `./gradlew testDebugUnitTest`.
+
 ## Settings
 
 | Variable | Default | Meaning |
