@@ -19,20 +19,22 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <!-- The app opens on the server's files; sync folders are one menu tap away. -->
         <activity
-            android:name=".MainActivity"
-            android:exported="true">
+            android:name=".BrowseActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".MainActivity"
+            android:label="Sync folders"
+            android:parentActivityName=".BrowseActivity" />
         <activity android:name=".LoginActivity" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".PairActivity" android:windowSoftInputMode="adjustResize" />
-        <activity
-            android:name=".BrowseActivity"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
-            android:theme="@style/BrowseTheme" />
 
         <!-- Long syncs run as a foreground "data sync" service with a progress notification. -->
         <service

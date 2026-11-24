@@ -1,7 +1,11 @@
 package app.shelf.sync;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.DownloadManager;
+import android.content.pm.PackageManager;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -33,6 +37,15 @@ public class BrowseActivity extends Activity {
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
+        if (!Prefs.configured(this)) {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
+        setTitle("Shelf");
+        if (android.os.Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
+        Scheduler.scheduleAll(this);
         root = new FrameLayout(this);
         root.setFitsSystemWindows(true);
         web = new WebView(this);
@@ -75,6 +88,7 @@ public class BrowseActivity extends Activity {
                 fullscreenDone = cb;
                 root.addView(view, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                 web.setVisibility(View.GONE);
+                if (getActionBar() != null) getActionBar().hide();
                 systemBars(false);
             }
 
@@ -84,6 +98,7 @@ public class BrowseActivity extends Activity {
                 root.removeView(fullscreen);
                 fullscreen = null;
                 web.setVisibility(View.VISIBLE);
+                if (getActionBar() != null) getActionBar().show();
                 systemBars(true);
                 if (fullscreenDone != null) fullscreenDone.onCustomViewHidden();
             }
@@ -151,6 +166,31 @@ public class BrowseActivity extends Activity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(0, 1, 0, "Sync folders").setIcon(R.drawable.ic_sync).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        menu.add(0, 2, 0, "Sync folders");
+        menu.add(0, 3, 0, "Server and login");
+        menu.add(0, 4, 0, "Reload");
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case 1: case 2:
+                startActivity(new Intent(this, MainActivity.class));
+                return true;
+            case 3:
+                startActivity(new Intent(this, LoginActivity.class));
+                return true;
+            case 4:
+                web.reload();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public void onBackPressed() {
         if (fullscreen != null) web.getWebChromeClient().onHideCustomView();
         else if (web.canGoBack()) web.goBack();
@@ -159,7 +199,7 @@ public class BrowseActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        web.destroy();
+        if (web != null) web.destroy();
         super.onDestroy();
     }
 }

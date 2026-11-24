@@ -67,8 +67,8 @@ public class LoginActivity extends Activity {
                 go.setEnabled(true);
                 if (fail != null) { error.setText("Could not connect: " + fail); return; }
                 Prefs.save(this, c.baseUrl(), name, pw, c.token() == null ? "" : c.token());
-                startActivity(new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
-                finish();
+                // Start over on the (possibly new) server's root folder.
+                startActivity(new Intent(this, BrowseActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
             });
         });
     }

@@ -1,11 +1,8 @@
 package app.shelf.sync;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -50,16 +47,12 @@ public class MainActivity extends Activity {
             finish();
             return;
         }
-        setTitle("Shelf sync");
+        setTitle("Sync folders");
+        if (getActionBar() != null) getActionBar().setDisplayHomeAsUpEnabled(true);
         LinearLayout page = Ui.page(this);
 
-        LinearLayout server = Ui.row(this);
         TextView where = Ui.text(this, Prefs.url(this) + (Prefs.user(this).isEmpty() ? "" : "  ·  " + Prefs.user(this)), 14, R.color.dim, false);
-        server.addView(where, Ui.weight(this, 0));
-        Button open = Ui.button(this, "Open Shelf", false);
-        open.setOnClickListener(v -> startActivity(new Intent(this, BrowseActivity.class)));
-        server.addView(open);
-        Ui.add(page, server, 4);
+        Ui.add(page, where, 4);
 
         list = Ui.column(this);
         Ui.add(page, list, 8);
@@ -68,9 +61,6 @@ public class MainActivity extends Activity {
         add.setOnClickListener(v -> startActivity(new Intent(this, PairActivity.class)));
         Ui.add(page, add, 16);
 
-        if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
-            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
-        Scheduler.scheduleAll(this);
     }
 
     @Override
@@ -207,6 +197,9 @@ public class MainActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
             case 1:
                 for (Db.Pair p : Db.get(this).pairs()) if (p.mode == SyncEngine.Mode.TWO_WAY) start(p.id);
                 if (Db.get(this).pairs().stream().anyMatch(p -> p.mode == SyncEngine.Mode.MOVE))
@@ -222,8 +215,8 @@ public class MainActivity extends Activity {
                         .setPositiveButton("Sign out", (d, w) -> {
                             for (Db.Pair p : Db.get(this).pairs()) Scheduler.remove(this, p.id);
                             Prefs.clear(this);
-                            startActivity(new Intent(this, LoginActivity.class));
-                            finish();
+                            android.webkit.CookieManager.getInstance().removeAllCookies(null);
+                            startActivity(new Intent(this, LoginActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
                         })
                         .setNegativeButton("Cancel", null).show();
                 return true;

@@ -49,7 +49,7 @@ Updates show up in the Docker tab like any other container. The **Auto Update Ap
 - Any phone folder can go to any server folder; missing server folders are created.
 - Uploads are sent in 8 MB chunks and resume after a dropped connection; files appear on the server only once complete and checked.
 - Syncs run automatically (every 15 minutes to once a day, optionally only on Wi-Fi or while charging) or with **Sync now**.
-- **Open Shelf** shows the full web interface inside the app, already signed in.
+- The app opens on the server's root folder: the full web interface (gallery, player, uploads), already signed in. The sync icon in the top bar, or **Sync folders** in its menu, leads to the sync settings.
 
 Files on the server are never deleted by the app.
 

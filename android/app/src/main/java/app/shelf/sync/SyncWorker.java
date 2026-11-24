@@ -150,8 +150,10 @@ public class SyncWorker extends Worker {
     }
 
     static PendingIntent openApp(Context ctx) {
-        Intent i = new Intent(ctx, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        return PendingIntent.getActivity(ctx, 0, i, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+        // Opens the sync page, with the file browser behind it for Back.
+        return android.app.TaskStackBuilder.create(ctx)
+                .addNextIntentWithParentStack(new Intent(ctx, MainActivity.class))
+                .getPendingIntent(0, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     static void channels(Context ctx) {
